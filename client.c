@@ -19,31 +19,39 @@ int main( int argc, char *argv[] )
     char buffer[BUFLEN];
     char server[255];
     char temp;
-    char c;
     int cnt = 0;
+    int verbose = 1;
     struct hostent *hostp;
 
     FILE *fp;
 
 
     /*handle args*/
-    if( argc = 4 && (port = atoi(argv[2])) != 0 )
+    if( argc >= 4 && (port = atoi(argv[2])) != 0 )
     {
+        
+        if( argc == 5 )
+        {
+            verbose = 0;
+        }
+        
         if( (fp = fopen( argv[3], "rb" )) != NULL )
         {
             strcpy(server, argv[1]);
-        
-            printf( "Connecting to %s, port %d ...\n", server, port );
+            if(verbose == 1)
+            {
+                printf( "Connecting to %s, port %d ...\n", server, port );
+            }
         }
         else
         {
-            printf( "file read error" );
+            printf( "file read error\n" );
             exit(-1);
         }
     }
     else
     {
-        printf( "usage: %s <server address> <port> <file>\n", argv[0] );
+        printf( "usage: %s <server address> <port> <file> <optional, turns off verbosity if present>\n", argv[0] );
         exit(-1);
     }
     
@@ -62,7 +70,10 @@ int main( int argc, char *argv[] )
     }
     else
     {
-        printf( "Client-socket() OK\n" );
+        if( verbose == 1 )
+        {
+            printf( "Client-socket() OK\n" );
+        }
     }
 
 
@@ -99,14 +110,19 @@ int main( int argc, char *argv[] )
         close( sd );
         exit( -1 );
     }
-    else
+    else if( verbose == 1 )
+    {
         printf( "Connection established...\n" );
+    }
 
     /*send file to the server */
     while (!feof(fp))
     {
         readsize = fread( buffer, 1, BUFLEN, fp );
-        printf("readsize: %d", readsize);
+        if( verbose == 1 )
+        {
+            printf("readsize: %d", readsize);
+        }
         rc = write( sd, buffer, readsize );
 
         if(rc < 0)
@@ -122,11 +138,11 @@ int main( int argc, char *argv[] )
             close( sd );
             exit( -1 );
         }
-        else
+        else if( verbose == 1 )
         {
             printf( "\nwrite %d OK\n", cnt );
+            cnt++;
         }
-        cnt++;
     }
     
     /* Close socket descriptor from client side. */
